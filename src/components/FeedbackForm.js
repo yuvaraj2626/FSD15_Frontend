@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { feedbackAPI } from '../services/api';
 
-const FeedbackForm = ({ complaint, onSuccess, onCancel }) => {
+const FeedbackForm = ({ complaint, existingFeedback, onSuccess, onCancel }) => {
     const [formData, setFormData] = useState({
-        rating: 5,
-        comment: ''
+        rating: existingFeedback ? existingFeedback.rating : 5,
+        comment: existingFeedback ? existingFeedback.comment : ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
+        const value = e.target.name === 'rating' ? parseInt(e.target.value) : e.target.value;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [e.target.name]: value
         });
         setError('');
     };
@@ -30,11 +31,20 @@ const FeedbackForm = ({ complaint, onSuccess, onCancel }) => {
         }
 
         try {
-            await feedbackAPI.create({
-                complaintId: complaint._id,
-                rating: parseInt(formData.rating),
-                comment: formData.comment
-            });
+            if (existingFeedback) {
+                // Update existing feedback
+                await feedbackAPI.update(existingFeedback._id, {
+                    rating: formData.rating,
+                    comment: formData.comment
+                });
+            } else {
+                // Create new feedback
+                await feedbackAPI.create({
+                    complaintId: complaint._id,
+                    rating: formData.rating,
+                    comment: formData.comment
+                });
+            }
             onSuccess();
         } catch (error) {
             setError(error.response?.data?.message || 'Failed to submit feedback');
@@ -47,7 +57,7 @@ const FeedbackForm = ({ complaint, onSuccess, onCancel }) => {
         <div>
             <div className="alert alert-info mb-3">
                 <span>ℹ️</span>
-                Providing feedback for: <strong>{complaint.title}</strong>
+                {existingFeedback ? 'Updating feedback for: ' : 'Providing feedback for: '}<strong>{complaint.title}</strong>
             </div>
 
             {error && (
@@ -103,7 +113,10 @@ const FeedbackForm = ({ complaint, onSuccess, onCancel }) => {
                         className="btn btn-primary"
                         disabled={loading}
                     >
-                        {loading ? 'Submitting...' : 'Submit Feedback'}
+                        {loading
+                            ? (existingFeedback ? 'Updating...' : 'Submitting...')
+                            : (existingFeedback ? 'Update Feedback' : 'Submit Feedback')
+                        }
                     </button>
                     <button
                         type="button"

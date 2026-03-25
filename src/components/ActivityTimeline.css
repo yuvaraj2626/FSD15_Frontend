@@ -1,0 +1,200 @@
+/* ===================================
+   Activity Timeline Component Styles
+   =================================== */
+
+.activity-timeline {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.timeline-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    font-family: 'Outfit', sans-serif;
+}
+
+.timeline-loading {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 0;
+}
+
+.timeline-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 1.25rem 0;
+}
+
+/* Timeline list */
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.timeline-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+/* Individual timeline items */
+.timeline-item {
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease;
+}
+
+.timeline-item--status .timeline-content {
+    background: rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 0.875rem;
+    flex: 1;
+}
+
+.timeline-item--system .timeline-content {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.875rem;
+    flex: 1;
+}
+
+.timeline-item:not(.timeline-item--status):not(.timeline-item--system) .timeline-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.875rem;
+    flex: 1;
+}
+
+/* Avatar */
+.timeline-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.timeline-avatar--text {
+    background: var(--gradient-1);
+    color: white;
+}
+
+.timeline-avatar--emoji {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    font-size: 1.1rem;
+}
+
+.timeline-avatar--support {
+    background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+}
+
+/* Meta row */
+.timeline-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.timeline-author {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.support-badge {
+    background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.3px;
+}
+
+.timeline-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.timeline-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Comment Input */
+.timeline-input-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.timeline-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.timeline-input-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--gradient-1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.timeline-input {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    transition: all var(--transition-base);
+}
+
+.timeline-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.timeline-send-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 1rem;
+}

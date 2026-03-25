@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const Navbar = () => {
-    const { user, logout, isAuthenticated } = useAuth();
+    const { user, logout, isAuthenticated, isSupport } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -27,6 +27,11 @@ const Navbar = () => {
                                 <Link to="/dashboard" className="nav-link">
                                     Dashboard
                                 </Link>
+                                {isSupport && (
+                                    <Link to="/analytics" className="nav-link nav-link--analytics">
+                                        📊 Analytics
+                                    </Link>
+                                )}
                                 <div className="user-menu">
                                     <div className="user-avatar">
                                         {user?.name?.charAt(0).toUpperCase()}

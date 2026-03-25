@@ -1,161 +1,226 @@
+/* ============================================================
+   ComplaintList — Ticket Rows
+   ============================================================ */
+
 .complaint-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 0;
 }
 
+/* ── Ticket Row ── */
 .complaint-card {
-    cursor: pointer;
-    transition: all var(--transition-base);
-    animation: fadeInUp 0.6s ease;
+    border-bottom: 1px solid var(--border-1);
+    transition: background var(--t-fast);
+    animation: fadeInUp 0.4s ease both;
+}
+
+.complaint-card:first-child {
+    border-radius: 0;
+}
+
+.complaint-card:last-child {
+    border-bottom: none;
 }
 
 .complaint-card:hover {
-    transform: translateY(-2px);
+    background: var(--surface-3);
 }
 
+/* ── Header (always visible row) ── */
 .complaint-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-md);
+    align-items: center;
+    padding: 0.9rem 0.25rem;
+    cursor: pointer;
+    gap: 1rem;
 }
 
 .complaint-title-section {
     flex: 1;
+    min-width: 0;
 }
 
 .complaint-title-section h3 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.25rem;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .complaint-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-md);
-    font-size: 0.875rem;
-    color: var(--text-muted);
+    gap: 0.75rem;
+    font-size: 0.775rem;
+    color: var(--text-3);
+    align-items: center;
 }
 
 .complaint-category,
 .complaint-user,
 .complaint-date {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.25rem;
 }
 
+/* ── Right Side: Badges + chevron ── */
 .complaint-badges {
     display: flex;
-    gap: var(--spacing-xs);
-    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
 }
 
+.expand-icon {
+    font-size: 0.65rem;
+    color: var(--text-3);
+    margin-left: 0.25rem;
+    transition: transform var(--t-fast);
+}
+
+/* ── Expanded Body ── */
 .complaint-body {
-    margin-top: var(--spacing-md);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--border);
-    animation: slideDown 0.3s ease;
+    padding: 0 0.25rem 1.25rem;
+    animation: slideDown 0.2s ease;
+    border-top: 1px solid var(--border-1);
+    margin-top: 0;
 }
 
 @keyframes slideDown {
     from {
         opacity: 0;
-        max-height: 0;
+        transform: translateY(-6px);
     }
 
     to {
         opacity: 1;
-        max-height: 1000px;
+        transform: translateY(0);
     }
 }
 
 .complaint-description {
-    margin-bottom: var(--spacing-md);
+    padding-top: 1rem;
+    margin-bottom: 1rem;
 }
 
 .complaint-description h4 {
-    font-size: 1rem;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
 }
 
 .complaint-description p {
-    color: var(--text-secondary);
+    color: var(--text-2);
+    font-size: 0.875rem;
     line-height: 1.7;
     white-space: pre-wrap;
 }
 
 .complaint-assigned {
-    padding: var(--spacing-sm);
-    background: var(--bg-card);
-    border-radius: var(--radius-md);
-    border-left: 3px solid var(--primary);
-    margin-bottom: var(--spacing-md);
-    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--surface-3);
+    border-radius: var(--r-full);
+    font-size: 0.8rem;
+    color: var(--text-2);
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-1);
 }
 
 .complaint-assigned strong {
-    color: var(--text-primary);
+    color: var(--text-1);
 }
 
+/* ── Actions Row ── */
 .complaint-actions {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.status-update-section {
+    width: 100%;
 }
 
 .status-update-section label {
     display: block;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-sm);
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
 }
 
 .status-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-xs);
+    gap: 0.5rem;
 }
 
+/* ── Empty State ── */
 .empty-state {
     text-align: center;
-    padding: var(--spacing-xl);
-    animation: fadeInUp 0.6s ease;
+    padding: 3.5rem 1rem;
+    animation: fadeInUp 0.5s ease;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
 .empty-icon {
-    font-size: 4rem;
-    margin-bottom: var(--spacing-md);
-    opacity: 0.5;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
 }
 
 .empty-state h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-2);
+    margin-bottom: 0.35rem;
 }
 
 .empty-state p {
-    color: var(--text-secondary);
+    color: var(--text-3);
+    font-size: 0.875rem;
 }
 
-@media (max-width: 768px) {
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
     .complaint-header {
-        flex-direction: column;
+        flex-wrap: wrap;
     }
 
     .complaint-badges {
+        order: -1;
         width: 100%;
-    }
-
-    .complaint-meta {
-        flex-direction: column;
-        gap: var(--spacing-xs);
     }
 
     .status-buttons {

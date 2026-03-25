@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { complaintsAPI } from '../services/api';
+import ActivityTimeline from './ActivityTimeline';
+import CommentPanel from './CommentPanel';
 import './ComplaintList.css';
 
 const ComplaintList = ({ complaints, onUpdate, onProvideFeedback }) => {
@@ -60,7 +62,7 @@ const ComplaintList = ({ complaints, onUpdate, onProvideFeedback }) => {
             <div className="empty-state glass-card">
                 <div className="empty-icon">📭</div>
                 <h3>No Complaints Found</h3>
-                <p>There are no complaints to display at the moment.</p>
+                <p>There are no complaints matching your filters.</p>
             </div>
         );
     }
@@ -91,6 +93,7 @@ const ComplaintList = ({ complaints, onUpdate, onProvideFeedback }) => {
                             <span className={getPriorityBadgeClass(complaint.priority)}>
                                 {complaint.priority}
                             </span>
+                            <span className="expand-icon">{expandedId === complaint._id ? '▲' : '▼'}</span>
                         </div>
                     </div>
 
@@ -107,6 +110,38 @@ const ComplaintList = ({ complaints, onUpdate, onProvideFeedback }) => {
                                 </div>
                             )}
 
+                            {/* ── Attachment ── */}
+                            {complaint.attachmentUrl && (
+                                <div className="complaint-attachment">
+                                    <h4>📎 Attachment</h4>
+                                    {/\.(jpg|jpeg|png|gif|webp)$/i.test(complaint.attachmentUrl) ? (
+                                        <a
+                                            href={`http://localhost:5000${complaint.attachmentUrl}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="attachment-img-link"
+                                        >
+                                            <img
+                                                src={`http://localhost:5000${complaint.attachmentUrl}`}
+                                                alt="Complaint attachment"
+                                                className="attachment-thumbnail"
+                                            />
+                                            <span className="attachment-img-hint">🔍 Click to view full size</span>
+                                        </a>
+                                    ) : (
+                                        <a
+                                            href={`http://localhost:5000${complaint.attachmentUrl}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-secondary btn-sm"
+                                            download
+                                        >
+                                            ⬇️ Download Attachment
+                                        </a>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="complaint-actions">
                                 {isSupport && (
                                     <div className="status-update-section">
@@ -115,12 +150,11 @@ const ComplaintList = ({ complaints, onUpdate, onProvideFeedback }) => {
                                             {['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'].map((status) => (
                                                 <button
                                                     key={status}
-                                                    className={`btn btn-sm ${complaint.status === status ? 'btn-primary' : 'btn-secondary'
-                                                        }`}
+                                                    className={`btn btn-sm ${complaint.status === status ? 'btn-primary' : 'btn-secondary'}`}
                                                     onClick={() => handleStatusUpdate(complaint._id, status)}
                                                     disabled={updatingId === complaint._id || complaint.status === status}
                                                 >
-                                                    {status.replace('_', ' ')}
+                                                    {updatingId === complaint._id && complaint.status !== status ? '...' : status.replace('_', ' ')}
                                                 </button>
                                             ))}
                                         </div>
@@ -136,6 +170,18 @@ const ComplaintList = ({ complaints, onUpdate, onProvideFeedback }) => {
                                     </button>
                                 )}
                             </div>
+
+                            {/* Activity Timeline */}
+                            <ActivityTimeline
+                                complaintId={complaint._id}
+                                complaintStatus={complaint.status}
+                            />
+
+                            {/* ── Chat / Comment Panel ── */}
+                            <CommentPanel
+                                complaintId={complaint._id}
+                                complaintStatus={complaint.status}
+                            />
                         </div>
                     )}
                 </div>

@@ -1,13 +1,39 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import './Home.css';
 
 const Home = () => {
     const { isAuthenticated } = useAuth();
+    const { theme, changeTheme, THEMES } = useTheme();
+
+    const themeOptions = [
+        { key: THEMES.DARK, icon: '🌙', label: 'Dark' },
+        { key: THEMES.LIGHT, icon: '☀️', label: 'Light' },
+        { key: THEMES.SYSTEM, icon: '💻', label: 'System' },
+    ];
+    const activeOption = themeOptions.find(o => o.key === theme) || themeOptions[0];
+
+    const cycleTheme = () => {
+        const cycle = [THEMES.DARK, THEMES.LIGHT, THEMES.SYSTEM];
+        const next = cycle[(cycle.indexOf(theme) + 1) % cycle.length];
+        changeTheme(next);
+    };
 
     return (
         <div className="home">
+            {/* Floating theme toggle on public pages */}
+            <button
+                id="home-theme-toggle"
+                className="theme-toggle-btn"
+                onClick={cycleTheme}
+                title={`Switch theme (current: ${activeOption.label})`}
+                style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 200 }}
+            >
+                <span className="theme-icon">{activeOption.icon}</span>
+                <span>{activeOption.label}</span>
+            </button>
             {/* Hero Section */}
             <section className="hero">
                 <div className="container">

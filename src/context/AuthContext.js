@@ -16,9 +16,10 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
+        // Check if user is logged in — sessionStorage is per-tab, so each tab
+        // can have a different logged-in user (e.g. USER in Tab 1, SUPPORT in Tab 2)
+        const token = sessionStorage.getItem('token');
+        const userData = sessionStorage.getItem('user');
 
         if (token && userData) {
             setUser(JSON.parse(userData));
@@ -31,8 +32,8 @@ export const AuthProvider = ({ children }) => {
             const response = await authAPI.login({ email, password });
             const { token, user } = response.data;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
             return { success: true };
@@ -49,8 +50,8 @@ export const AuthProvider = ({ children }) => {
             const response = await authAPI.register({ name, email, password, role });
             const { token, user } = response.data;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
             return { success: true };
@@ -63,8 +64,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         setUser(null);
     };
 

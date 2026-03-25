@@ -63,6 +63,17 @@
     background: var(--glass-bg);
 }
 
+.nav-link--analytics {
+    color: var(--primary-light);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+.nav-link--analytics:hover {
+    background: rgba(124, 58, 237, 0.15);
+    border-color: var(--primary);
+    color: white;
+}
+
 .user-menu {
     display: flex;
     align-items: center;

@@ -1,0 +1,319 @@
+/* ============================================================
+   COMMENT PANEL  — Chat UI for Complaint Communication
+   ============================================================ */
+
+.comment-panel {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-1);
+    padding-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Header ── */
+.comment-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.comment-panel-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comment-count-badge {
+    background: var(--surface-3);
+    border: 1px solid var(--border-2);
+    color: var(--text-3);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--r-full);
+    min-width: 22px;
+    text-align: center;
+}
+
+/* ── Chat Window ── */
+.chat-window {
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    max-height: 320px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    scroll-behavior: smooth;
+}
+
+/* ── Empty state ── */
+.chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    color: var(--text-3);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.chat-empty-icon {
+    font-size: 1.75rem;
+    opacity: 0.6;
+}
+
+/* ── Loading ── */
+.chat-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    color: var(--text-3);
+    font-size: 0.85rem;
+}
+
+.chat-loading .spinner {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+}
+
+/* ── Message Bubble ── */
+.chat-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 78%;
+    animation: msgIn 0.2s ease;
+}
+
+@keyframes msgIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* USER messages — left side */
+.chat-message.msg-user {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+/* SUPPORT messages — right side */
+.chat-message.msg-support {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+/* ── Sender info row ── */
+.msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+    font-size: 0.72rem;
+    color: var(--text-3);
+}
+
+.msg-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.msg-user .msg-avatar {
+    background: var(--info-bg);
+    color: var(--info);
+    border: 1px solid var(--info-border);
+}
+
+.msg-support .msg-avatar {
+    background: rgba(109, 40, 217, 0.18);
+    color: var(--brand-400);
+    border: 1px solid rgba(109, 40, 217, 0.3);
+}
+
+.msg-sender-name {
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.msg-role-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.45rem;
+    height: 16px;
+    border-radius: var(--r-full);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.msg-user .msg-role-tag {
+    background: var(--info-bg);
+    color: var(--info);
+    border: 1px solid var(--info-border);
+}
+
+.msg-support .msg-role-tag {
+    background: rgba(109, 40, 217, 0.14);
+    color: var(--brand-400);
+    border: 1px solid rgba(109, 40, 217, 0.25);
+}
+
+/* ── Bubble ── */
+.msg-bubble {
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--r-lg);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    word-break: break-word;
+    position: relative;
+}
+
+.msg-user .msg-bubble {
+    background: var(--surface-3);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    border-top-left-radius: 4px;
+}
+
+.msg-support .msg-bubble {
+    background: linear-gradient(135deg,
+            hsl(252, 60%, 22%) 0%,
+            hsl(280, 60%, 20%) 100%);
+    border: 1px solid rgba(109, 40, 217, 0.3);
+    color: var(--text-1);
+    border-top-right-radius: 4px;
+    box-shadow: 0 2px 8px rgba(109, 40, 217, 0.2);
+}
+
+/* ── Timestamp ── */
+.msg-time {
+    font-size: 0.65rem;
+    color: var(--text-3);
+    margin-top: 0.25rem;
+    padding: 0 0.1rem;
+}
+
+/* ── Chat Input Bar ── */
+.chat-input-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-1);
+    background: var(--surface-2);
+}
+
+.chat-textarea {
+    flex: 1;
+    background: var(--surface-3);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-md);
+    color: var(--text-1);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    padding: 0.6rem 0.85rem;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
+    outline: none;
+    transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.chat-textarea:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+    background: var(--surface-4);
+}
+
+.chat-textarea::placeholder {
+    color: var(--text-3);
+}
+
+.chat-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-md);
+    border: none;
+    background: var(--gradient-brand);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--t-fast);
+    box-shadow: var(--shadow-brand);
+}
+
+.chat-send-btn:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: scale(1.06);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Send error message ── */
+.chat-send-error {
+    font-size: 0.76rem;
+    color: var(--danger);
+    padding: 0.3rem 1rem 0.5rem;
+}
+
+/* ── Date separator ── */
+.chat-date-sep {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-3);
+    margin: 0.5rem 0;
+}
+
+.chat-date-sep::before,
+.chat-date-sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-1);
+}

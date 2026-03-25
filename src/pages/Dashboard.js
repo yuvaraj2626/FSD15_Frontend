@@ -1,78 +1,114 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { complaintsAPI, feedbackAPI } from '../services/api';
 import ComplaintForm from '../components/ComplaintForm';
 import ComplaintList from '../components/ComplaintList';
 import FeedbackForm from '../components/FeedbackForm';
+import SearchFilter from '../components/SearchFilter';
+import Pagination from '../components/Pagination';
 import './Dashboard.css';
 
 const Dashboard = () => {
     const { user, isUser, isSupport } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const [complaints, setComplaints] = useState([]);
     const [feedbacks, setFeedbacks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showComplaintForm, setShowComplaintForm] = useState(false);
+    const [showTicketForm, setShowTicketForm] = useState(false);
     const [selectedComplaint, setSelectedComplaint] = useState(null);
     const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-    const [stats, setStats] = useState({
-        total: 0,
-        open: 0,
-        inProgress: 0,
-        resolved: 0,
-        closed: 0
+    const [pagination, setPagination] = useState(null);
+    const [activeFilters, setActiveFilters] = useState({});
+    const [globalStats, setGlobalStats] = useState({
+        total: 0, open: 0, inProgress: 0, resolved: 0, closed: 0
     });
 
+    // Sync sidebar quick-filter from query param
     useEffect(() => {
-        fetchComplaints();
-        if (isSupport) {
-            fetchFeedbacks();
+        const params = new URLSearchParams(location.search);
+        const statusParam = params.get('status');
+        if (statusParam) {
+            const newFilters = { status: statusParam };
+            setActiveFilters(newFilters);
+            fetchComplaints(newFilters);
+        } else {
+            setActiveFilters({});
+            fetchComplaints({});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
+
+    const fetchComplaints = useCallback(async (params = {}) => {
+        setLoading(true);
+        try {
+            const response = await complaintsAPI.getAll({ limit: 10, ...params });
+            const { complaints: list, pagination: pages } = response.data;
+            setComplaints(list);
+            setPagination(pages);
+
+            // Update global stats only for unfiltered view
+            if (!params.status && !params.search && !params.category && !params.priority) {
+                setGlobalStats({
+                    total: pages?.total ?? list.length,
+                    open: list.filter(c => c.status === 'OPEN').length,
+                    inProgress: list.filter(c => c.status === 'IN_PROGRESS').length,
+                    resolved: list.filter(c => c.status === 'RESOLVED').length,
+                    closed: list.filter(c => c.status === 'CLOSED').length
+                });
+            }
+        } catch (err) {
+            console.error('Failed to fetch complaints:', err);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
-    const fetchComplaints = async () => {
+    const fetchFeedbacks = useCallback(async () => {
         try {
-            const response = await complaintsAPI.getAll();
-            const complaintsData = response.data.complaints;
-            setComplaints(complaintsData);
-
-            // Calculate stats
-            setStats({
-                total: complaintsData.length,
-                open: complaintsData.filter(c => c.status === 'OPEN').length,
-                inProgress: complaintsData.filter(c => c.status === 'IN_PROGRESS').length,
-                resolved: complaintsData.filter(c => c.status === 'RESOLVED').length,
-                closed: complaintsData.filter(c => c.status === 'CLOSED').length
-            });
-
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching complaints:', error);
-            setLoading(false);
+            const res = await feedbackAPI.getAll();
+            setFeedbacks(res.data.feedbacks);
+        } catch (err) {
+            console.error('Failed to fetch feedbacks:', err);
         }
+    }, []);
+
+    useEffect(() => {
+        // Only on mount without query params
+        if (!location.search) {
+            fetchComplaints({});
+        }
+        if (isSupport) fetchFeedbacks();
+    }, [fetchComplaints, fetchFeedbacks, isSupport, location.search]);
+
+    const handleFilter = (params) => {
+        setActiveFilters(params);
+        // Clear sidebar URL filter
+        if (location.search) navigate('/dashboard', { replace: true });
+        fetchComplaints({ ...params, page: 1 });
     };
 
-    const fetchFeedbacks = async () => {
-        try {
-            const response = await feedbackAPI.getAll();
-            setFeedbacks(response.data.feedbacks);
-        } catch (error) {
-            console.error('Error fetching feedbacks:', error);
-        }
+    const handlePageChange = (page) => {
+        fetchComplaints({ ...activeFilters, page });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleComplaintCreated = () => {
-        setShowComplaintForm(false);
-        fetchComplaints();
+    const handleTicketCreated = () => {
+        setShowTicketForm(false);
+        fetchComplaints(activeFilters);
+        if (isSupport) fetchFeedbacks();
     };
 
     const handleComplaintUpdated = () => {
-        fetchComplaints();
+        fetchComplaints({ ...activeFilters, page: pagination?.page || 1 });
     };
 
     const handleFeedbackSubmitted = () => {
         setShowFeedbackForm(false);
         setSelectedComplaint(null);
-        fetchComplaints();
+        fetchComplaints(activeFilters);
     };
 
     const handleProvideFeedback = (complaint) => {
@@ -80,140 +116,172 @@ const Dashboard = () => {
         setShowFeedbackForm(true);
     };
 
-    if (loading) {
-        return (
-            <div className="loading-container">
-                <div className="spinner"></div>
-            </div>
-        );
-    }
+    const currentStatusLabel = () => {
+        const s = activeFilters.status;
+        if (!s) return 'All Tickets';
+        return s.replace('_', ' ');
+    };
 
     return (
-        <div className="dashboard">
-            <div className="container">
-                {/* Header */}
-                <div className="dashboard-header">
-                    <div>
-                        <h1 className="gradient-text">
-                            {isUser ? 'My Complaints' : 'Support Dashboard'}
-                        </h1>
-                        <p className="dashboard-subtitle">
-                            {isUser
-                                ? 'Track and manage your submitted complaints'
-                                : 'Manage and resolve customer complaints'}
-                        </p>
-                    </div>
-                    {isUser && (
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => setShowComplaintForm(!showComplaintForm)}
-                        >
-                            {showComplaintForm ? '✕ Cancel' : '+ New Complaint'}
-                        </button>
-                    )}
+        <>
+            {/* ── Page Header ── */}
+            <div className="dashboard-page-header">
+                <div>
+                    <h1>{isUser ? '🎫 My Tickets' : '🛠️ Support Queue'}</h1>
+                    <p className="dashboard-subtitle">
+                        {activeFilters.status
+                            ? `Showing: ${currentStatusLabel()} tickets`
+                            : isUser
+                                ? 'Submit, track, and manage your support requests'
+                                : 'Review, assign and resolve customer tickets'}
+                    </p>
                 </div>
+                {isUser && (
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => setShowTicketForm(f => !f)}
+                    >
+                        {showTicketForm ? '✕ Cancel' : '+ New Ticket'}
+                    </button>
+                )}
+            </div>
 
-                {/* Stats Cards */}
-                <div className="stats-grid">
-                    <div className="stat-card glass-card">
-                        <div className="stat-icon" style={{ background: 'var(--gradient-1)' }}>
-                            📊
-                        </div>
-                        <div className="stat-content">
-                            <h3>{stats.total}</h3>
-                            <p>Total Complaints</p>
-                        </div>
-                    </div>
-
-                    <div className="stat-card glass-card">
-                        <div className="stat-icon" style={{ background: 'var(--info)' }}>
-                            🆕
-                        </div>
-                        <div className="stat-content">
-                            <h3>{stats.open}</h3>
-                            <p>Open</p>
-                        </div>
-                    </div>
-
-                    <div className="stat-card glass-card">
-                        <div className="stat-icon" style={{ background: 'var(--warning)' }}>
-                            ⏳
-                        </div>
-                        <div className="stat-content">
-                            <h3>{stats.inProgress}</h3>
-                            <p>In Progress</p>
-                        </div>
-                    </div>
-
-                    <div className="stat-card glass-card">
-                        <div className="stat-icon" style={{ background: 'var(--success)' }}>
-                            ✅
-                        </div>
-                        <div className="stat-content">
-                            <h3>{stats.closed}</h3>
-                            <p>Closed</p>
-                        </div>
+            {/* ── KPI Row ── */}
+            <div className="kpi-row">
+                <div className="kpi-card">
+                    <div className="kpi-icon kpi-icon--total">📋</div>
+                    <div className="kpi-content">
+                        <div className="kpi-value">{globalStats.total}</div>
+                        <div className="kpi-label">Total Tickets</div>
                     </div>
                 </div>
-
-                {/* Complaint Form */}
-                {showComplaintForm && (
-                    <div className="form-section glass-card">
-                        <h2>Submit New Complaint</h2>
-                        <ComplaintForm onSuccess={handleComplaintCreated} />
+                <div className="kpi-card">
+                    <div className="kpi-icon kpi-icon--open">🆕</div>
+                    <div className="kpi-content">
+                        <div className="kpi-value">{globalStats.open}</div>
+                        <div className="kpi-label">Open</div>
                     </div>
-                )}
-
-                {/* Feedback Form */}
-                {showFeedbackForm && selectedComplaint && (
-                    <div className="form-section glass-card">
-                        <h2>Provide Feedback</h2>
-                        <FeedbackForm
-                            complaint={selectedComplaint}
-                            onSuccess={handleFeedbackSubmitted}
-                            onCancel={() => {
-                                setShowFeedbackForm(false);
-                                setSelectedComplaint(null);
-                            }}
-                        />
+                </div>
+                <div className="kpi-card">
+                    <div className="kpi-icon kpi-icon--progress">⏳</div>
+                    <div className="kpi-content">
+                        <div className="kpi-value">{globalStats.inProgress}</div>
+                        <div className="kpi-label">In Progress</div>
                     </div>
-                )}
+                </div>
+                <div className="kpi-card">
+                    <div className="kpi-icon kpi-icon--closed">✅</div>
+                    <div className="kpi-content">
+                        <div className="kpi-value">{globalStats.closed}</div>
+                        <div className="kpi-label">Closed</div>
+                    </div>
+                </div>
+            </div>
 
-                {/* Complaints List */}
-                <div className="complaints-section">
-                    <ComplaintList
-                        complaints={complaints}
-                        onUpdate={handleComplaintUpdated}
-                        onProvideFeedback={handleProvideFeedback}
+            {/* ── Feedback Form (inline) ── */}
+            {showFeedbackForm && selectedComplaint && (
+                <div className="form-section">
+                    <h2>⭐ Rate Your Experience — {selectedComplaint.title}</h2>
+                    <FeedbackForm
+                        complaint={selectedComplaint}
+                        onSuccess={handleFeedbackSubmitted}
+                        onCancel={() => { setShowFeedbackForm(false); setSelectedComplaint(null); }}
                     />
                 </div>
+            )}
 
-                {/* Feedbacks Section (Support Only) */}
-                {isSupport && feedbacks.length > 0 && (
-                    <div className="feedbacks-section glass-card">
-                        <h2>Recent Feedback</h2>
-                        <div className="feedback-list">
-                            {feedbacks.slice(0, 5).map((feedback) => (
-                                <div key={feedback._id} className="feedback-item">
-                                    <div className="feedback-header">
-                                        <div>
-                                            <strong>{feedback.userId?.name}</strong>
-                                            <span className="feedback-complaint">
-                                                {feedback.complaintId?.title}
-                                            </span>
-                                        </div>
-                                        <div className="feedback-rating">
-                                            {'⭐'.repeat(feedback.rating)}
-                                        </div>
-                                    </div>
-                                    <p className="feedback-comment">{feedback.comment}</p>
+            {/* ── 2-Column Grid ── */}
+            <div className={isSupport && feedbacks.length > 0 ? 'dashboard-grid' : ''}>
+
+                {/* ── Main Column ── */}
+                <div className="dashboard-main">
+                    {/* New Ticket Form */}
+                    {showTicketForm && (
+                        <div className="section-card" style={{ marginBottom: '1.25rem' }}>
+                            <div className="section-card-header">
+                                <span className="section-card-title">✏️ New Ticket</span>
+                                <button className="btn btn-ghost btn-sm" onClick={() => setShowTicketForm(false)}>
+                                    ✕ Close
+                                </button>
+                            </div>
+                            <div className="section-card-body">
+                                <ComplaintForm onSuccess={handleTicketCreated} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Search & Filter */}
+                    <SearchFilter onFilter={handleFilter} isSupport={isSupport} />
+
+                    {/* Ticket List */}
+                    <div className="section-card" style={{ marginTop: '1.25rem' }}>
+                        <div className="section-card-header">
+                            <span className="section-card-title">
+                                🎫 {currentStatusLabel()}
+                                {pagination && (
+                                    <span style={{ fontSize: '0.78rem', fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>
+                                        ({pagination.total} total)
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+                        <div className="section-card-body">
+                            {loading ? (
+                                <div className="loading-container">
+                                    <div className="spinner"></div>
                                 </div>
-                            ))}
+                            ) : (
+                                <>
+                                    <ComplaintList
+                                        complaints={complaints}
+                                        onUpdate={handleComplaintUpdated}
+                                        onProvideFeedback={handleProvideFeedback}
+                                    />
+                                    <Pagination
+                                        pagination={pagination}
+                                        onPageChange={handlePageChange}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Sidebar Column (Support only) ── */}
+                {isSupport && feedbacks.length > 0 && (
+                    <div className="dashboard-sidebar-col">
+                        <div className="section-card">
+                            <div className="section-card-header">
+                                <span className="section-card-title">⭐ Recent Feedback</span>
+                                <span style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>
+                                    {feedbacks.length} total
+                                </span>
+                            </div>
+                            <div className="section-card-body">
+                                <div className="feedback-list">
+                                    {feedbacks.slice(0, 6).map(fb => (
+                                        <div key={fb._id} className="feedback-item">
+                                            <div className="feedback-header">
+                                                <div>
+                                                    <strong>{fb.userId?.name}</strong>
+                                                    <span className="feedback-complaint">{fb.complaintId?.title}</span>
+                                                </div>
+                                                <span className="feedback-rating">
+                                                    {'⭐'.repeat(fb.rating)}
+                                                </span>
+                                            </div>
+                                            {fb.comment && (
+                                                <p className="feedback-comment">"{fb.comment}"</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 
